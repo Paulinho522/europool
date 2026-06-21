@@ -93,9 +93,12 @@ async function getActiveSeason() {
  */
 function showAlert(elementId, message, type = 'info') {
   const el = document.getElementById(elementId);
-  if (!el) return;
-  el.className = `alert alert-${type}`;
+  if (!el) {
+    console.warn(`showAlert: element with id "${elementId}" not found`);
+    return;
+  }
+  el.classList.remove('alert-success', 'alert-error', 'alert-info', 'hidden');
+  el.classList.add('alert', `alert-${type}`);
   el.textContent = message;
-  el.classList.remove('hidden');
   setTimeout(() => el.classList.add('hidden'), 4000);
 }
