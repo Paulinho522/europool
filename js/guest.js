@@ -52,17 +52,25 @@ async function loadLeaderboard() {
   }
 
   // 5. Calcular progresso de cada jogador
-  allRows = (seasonPlayers || []).map(sp => {
-    const { matched } = calcProgress(sp.key_numbers, draws || []);
-    return {
-      playerId: sp.player_id,
-      name: sp.players.name,
-      count: matched.length,
-      total: sp.key_numbers.length,
-    };
-  }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  allRows = (seasonPlayers || [])
+    .filter(sp => sp.players != null) // skip orphaned rows
+    .map(sp => {
+      const { matched } = calcProgress(sp.key_numbers, draws || []);
+      return {
+        playerId: sp.player_id,
+        name: sp.players.name,
+        count: matched.length,
+        total: sp.key_numbers.length,
+      };
+    }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
-  renderLeaderboard(allRows);
+  // Re-apply any search query that was typed during load
+  const currentQuery = document.getElementById('search-input').value.trim().toLowerCase();
+  if (currentQuery) {
+    renderLeaderboard(allRows.filter(r => r.name.toLowerCase().includes(currentQuery)));
+  } else {
+    renderLeaderboard(allRows);
+  }
 }
 
 function renderLeaderboard(rows) {
@@ -98,7 +106,7 @@ function renderLeaderboard(rows) {
 }
 
 function escapeHtml(str) {
-  return str
+  return String(str ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

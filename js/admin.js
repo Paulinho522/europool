@@ -6,13 +6,15 @@
 
 let currentSeason = null;
 let currentUser   = null;
+let _allPlayers   = []; // cache for editPlayerName lookup
 
 async function initAdmin() {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session) {
+  const { data, error: sessionErr } = await db.auth.getSession();
+  if (sessionErr || !data?.session) {
     window.location.href = 'admin-login.html';
     return;
   }
+  const session = data.session;
   currentUser = session.user;
   document.getElementById('admin-email').textContent = currentUser.email;
 
@@ -158,7 +160,7 @@ async function loadPlayersTab() {
   // Preencher select de associação
   const select = document.getElementById('sp-player-select');
   select.innerHTML = '<option value="">Selecionar jogador...</option>' +
-    (players || []).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    (players || []).map(p => `<option value="${p.id}">${escapeAdminHtml(p.name)}</option>`).join('');
 
   // Carregar season_players da temporada ativa
   if (currentSeason) {
@@ -175,6 +177,7 @@ async function loadPlayersTab() {
 }
 
 function renderAllPlayers(players) {
+  _allPlayers = players; // store for lookup in editPlayerName
   const list = document.getElementById('all-players-list');
   if (players.length === 0) {
     list.innerHTML = '<p class="text-muted text-sm">Sem jogadores criados.</p>';
@@ -188,7 +191,7 @@ function renderAllPlayers(players) {
           <tr>
             <td>${escapeAdminHtml(p.name)}</td>
             <td style="text-align:right;">
-              <button class="btn btn-secondary btn-sm" onclick="editPlayerName('${p.id}', ${JSON.stringify(p.name)})">
+              <button class="btn btn-secondary btn-sm" onclick="editPlayerName('${p.id}')">
                 ✏️ Editar
               </button>
             </td>
@@ -262,9 +265,11 @@ document.getElementById('add-player-form').addEventListener('submit', async (e) 
 });
 
 // Editar nome de jogador
-async function editPlayerName(playerId, currentName) {
+async function editPlayerName(playerId) {
+  const player = _allPlayers.find(p => p.id === playerId);
+  const currentName = player ? player.name : '';
   const newName = prompt('Novo nome do jogador:', currentName);
-  if (!newName || newName.trim() === currentName) return;
+  if (!newName || newName.trim() === currentName.trim()) return;
   const { error } = await db
     .from('players')
     .update({ name: newName.trim() })
@@ -544,14 +549,16 @@ async function loadAdminLeaderboard() {
 
   // Leaderboard
   const MEDALS = ['🥇', '🥈', '🥉'];
-  const rows = (seasonPlayers || []).map(sp => {
-    const { matched } = calcProgress(sp.key_numbers, draws || []);
-    return {
-      name: sp.players.name,
-      count: matched.length,
-      total: sp.key_numbers.length,
-    };
-  }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const rows = (seasonPlayers || [])
+    .filter(sp => sp.players != null)
+    .map(sp => {
+      const { matched } = calcProgress(sp.key_numbers, draws || []);
+      return {
+        name: sp.players.name,
+        count: matched.length,
+        total: sp.key_numbers.length,
+      };
+    }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
   document.getElementById('admin-player-count').textContent =
     `${rows.length} jogador${rows.length !== 1 ? 'es' : ''}`;
