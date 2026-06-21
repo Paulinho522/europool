@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EuroPool — Admin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <a href="index.html" class="topbar-logo">🍀 EuroPool</a>
+    <div class="topbar-user">
+      <span id="admin-email" class="text-muted text-sm"></span>
+      <button onclick="logout()" class="btn btn-danger btn-sm">Sair</button>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top: 20px; padding-bottom: 40px;">
+
+    <!-- Cabeçalho do painel -->
+    <div style="margin-bottom: 20px;">
+      <h1 style="color: var(--admin); font-size: 1.3rem;">⚙️ Painel de Administração</h1>
+      <p class="text-muted text-sm mt-8" id="active-season-label">A carregar...</p>
+    </div>
+
+    <!-- Alerta global -->
+    <div id="global-alert" class="alert hidden"></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="draws" onclick="showTab('draws')">🎱 Sorteios</button>
+      <button class="tab-btn" data-tab="players" onclick="showTab('players')">👥 Jogadores</button>
+      <button class="tab-btn" data-tab="seasons" onclick="showTab('seasons')">🏆 Temporadas</button>
+      <button class="tab-btn" data-tab="leaderboard" onclick="showTab('leaderboard')">📊 Leaderboard</button>
+    </div>
+
+    <!-- Tab: Sorteios -->
+    <div id="tab-draws" class="tab-content active">
+      <div class="card">
+        <p class="card-title">➕ Registar Novo Sorteio</p>
+        <div id="alert-draws" class="alert hidden"></div>
+        <form id="draw-form">
+          <div class="form-row" style="flex-wrap: wrap; gap: 10px; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom:0; flex: 1; min-width: 130px;">
+              <label class="form-label">Data do Sorteio</label>
+              <input type="date" id="draw-date" class="form-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">5 Números Sorteados</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" class="form-input draw-num" min="1" max="50" style="width:52px; text-align:center; padding:10px 4px;" placeholder="—" required>
+                <input type="number" class="form-input draw-num" min="1" max="50" style="width:52px; text-align:center; padding:10px 4px;" placeholder="—" required>
+                <input type="number" class="form-input draw-num" min="1" max="50" style="width:52px; text-align:center; padding:10px 4px;" placeholder="—" required>
+                <input type="number" class="form-input draw-num" min="1" max="50" style="width:52px; text-align:center; padding:10px 4px;" placeholder="—" required>
+                <input type="number" class="form-input draw-num" min="1" max="50" style="width:52px; text-align:center; padding:10px 4px;" placeholder="—" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-bottom:0;">Guardar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <p class="card-title">📋 Sorteios da Temporada Ativa</p>
+        <div id="draws-list"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Jogadores -->
+    <div id="tab-players" class="tab-content">
+      <div class="card">
+        <p class="card-title">➕ Adicionar Jogador</p>
+        <div id="alert-players" class="alert hidden"></div>
+        <form id="add-player-form" class="form-row">
+          <div style="flex:1;">
+            <input type="text" id="new-player-name" class="form-input" placeholder="Nome do jogador" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <p class="card-title">👥 Todos os Jogadores</p>
+        <div id="all-players-list"></div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">🔑 Jogadores nesta Temporada</p>
+        <p class="text-muted text-sm mb-16">Associar jogador à temporada ativa e definir a sua chave de 15 números.</p>
+        <div id="alert-season-players" class="alert hidden"></div>
+
+        <!-- Formulário de associação -->
+        <form id="add-season-player-form" style="margin-bottom: 20px;">
+          <div class="form-group">
+            <label class="form-label">Jogador</label>
+            <select id="sp-player-select" class="form-input" required>
+              <option value="">Selecionar jogador...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chave (15 números separados por vírgula, ex: 1,5,10,...)</label>
+            <input type="text" id="sp-key-input" class="form-input" placeholder="1,5,10,15,20,25,30,35,40,45,7,14,22,33,48" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Associar à Temporada</button>
+        </form>
+
+        <div id="season-players-list"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Temporadas -->
+    <div id="tab-seasons" class="tab-content">
+      <div id="alert-seasons" class="alert hidden"></div>
+
+      <!-- Temporada ativa -->
+      <div class="card" id="active-season-card">
+        <p class="card-title">📅 Temporada Ativa</p>
+        <div id="active-season-info"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+          <button class="btn btn-admin" onclick="openDeclareWinner()">🏆 Declarar Vencedor</button>
+          <button class="btn btn-secondary" onclick="openNewSeason()">➕ Nova Temporada</button>
+        </div>
+      </div>
+
+      <!-- Declarar vencedor (oculto por defeito) -->
+      <div class="card hidden" id="declare-winner-form-card">
+        <p class="card-title">🏆 Declarar Vencedor</p>
+        <div class="form-group">
+          <label class="form-label">Jogador Vencedor</label>
+          <select id="winner-select" class="form-input">
+            <option value="">Selecionar jogador...</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-admin" onclick="declareWinner()">Confirmar Vencedor</button>
+          <button class="btn btn-secondary" onclick="closeDeclareWinner()">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Nova temporada (oculto por defeito) -->
+      <div class="card hidden" id="new-season-form-card">
+        <p class="card-title">➕ Nova Temporada</p>
+        <div class="form-group">
+          <label class="form-label">Nome da Temporada</label>
+          <input type="text" id="new-season-name" class="form-input" placeholder="Ex: Temporada 2, Torneio de Verão...">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="createNewSeason()">Criar Temporada</button>
+          <button class="btn btn-secondary" onclick="closeNewSeason()">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Histórico -->
+      <div class="card">
+        <p class="card-title">📖 Histórico de Temporadas</p>
+        <div id="seasons-history"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Leaderboard -->
+    <div id="tab-leaderboard" class="tab-content">
+      <div class="last-draw hidden" id="admin-last-draw">
+        <div class="last-draw-label" id="admin-last-draw-label"></div>
+        <div class="balls-row" id="admin-last-draw-balls"></div>
+      </div>
+      <p class="section-heading" id="admin-player-count"></p>
+      <div id="admin-leaderboard-list"></div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
