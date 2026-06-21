@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EuroPool — Admin Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+  <div style="width: 100%; max-width: 360px; padding: 24px 16px;">
+
+    <div style="text-align: center; margin-bottom: 32px;">
+      <div style="font-size: 2.5rem;">🔐</div>
+      <h1 style="color: var(--admin); font-size: 1.4rem; margin-top: 8px;">Área Admin</h1>
+      <p class="text-muted text-sm mt-8">Acesso restrito ao administrador</p>
+    </div>
+
+    <div class="card">
+      <div id="alert-box" class="alert hidden"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-input"
+            placeholder="admin@email.com"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-input"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" class="btn btn-admin btn-full mt-8" id="login-btn">
+          Entrar
+        </button>
+      </form>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="index.html" class="back-link">← Voltar ao início</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    // Se já está autenticado, redirecionar para o painel
+    (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) window.location.href = 'admin.html';
+    })();
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn   = document.getElementById('login-btn');
+      const email = document.getElementById('email').value.trim();
+      const pass  = document.getElementById('password').value;
+
+      btn.disabled = true;
+      btn.textContent = 'A entrar...';
+
+      const { error } = await db.auth.signInWithPassword({ email, password: pass });
+
+      if (error) {
+        showAlert('alert-box', 'Email ou password incorretos.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      } else {
+        window.location.href = 'admin.html';
+      }
+    });
+  </script>
+</body>
+</html>
