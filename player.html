@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EuroPool — Jogador</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html" class="topbar-logo">🍀 EuroPool</a>
+    <span class="topbar-season" id="season-badge"></span>
+  </div>
+
+  <div class="container" style="padding-bottom: 40px;">
+
+    <!-- Botão voltar -->
+    <a href="guest.html" class="back-link">← Voltar ao leaderboard</a>
+
+    <!-- Estado de loading / erro -->
+    <div id="alert-box" class="alert hidden"></div>
+
+    <!-- Conteúdo do perfil (escondido até carregar) -->
+    <div id="profile-content" class="hidden">
+
+      <!-- Cabeçalho do perfil -->
+      <div class="profile-header">
+        <h2 id="player-name" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 4px;"></h2>
+        <p id="season-name" class="text-muted text-sm"></p>
+        <div class="profile-score" id="score-display"></div>
+        <p class="profile-score-label">números acertados</p>
+
+        <!-- Barra de progresso -->
+        <div class="progress-bar-wrap" style="margin: 0 auto; max-width: 200px;">
+          <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
+        </div>
+
+        <!-- Mensagem motivacional (só aparece se faltam ≤ 3) -->
+        <div id="motivation-msg" class="profile-motivation hidden"></div>
+      </div>
+
+      <!-- Grelha de bolas -->
+      <div class="card">
+        <p class="card-title">Chave da Temporada</p>
+        <div class="balls-grid" id="balls-grid"></div>
+
+        <div class="legend mt-16">
+          <span>
+            <span class="legend-dot" style="background: var(--accent);"></span>
+            Acertado
+          </span>
+          <span>
+            <span class="legend-dot" style="background: transparent; border: 2px solid var(--border);"></span>
+            Pendente
+          </span>
+        </div>
+      </div>
+
+      <!-- Histórico de acertos -->
+      <div class="card" id="match-history-card">
+        <p class="card-title">Histórico de Acertos</p>
+        <table class="table" id="match-history-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Sorteio</th>
+            </tr>
+          </thead>
+          <tbody id="match-history-body"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/player.js"></script>
+</body>
+</html>
