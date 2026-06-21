@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EuroPool</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="landing">
+    <div class="landing-logo">🍀</div>
+    <h1 class="landing-title">EuroPool</h1>
+    <p class="landing-subtitle">O jogo partilhado do Euromilhões</p>
+    <p class="landing-season" id="active-season">A carregar...</p>
+
+    <div class="landing-buttons">
+      <a href="guest.html" class="btn btn-primary landing-btn-guest">
+        👁️ Entrar como Convidado
+      </a>
+      <a href="admin-login.html" class="btn btn-secondary landing-btn-admin">
+        🔐 Área Admin
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    (async () => {
+      const season = await getActiveSeason();
+      const el = document.getElementById('active-season');
+      if (season) {
+        el.textContent = `📅 ${season.name} · Ativa desde ${formatDate(season.start_date)}`;
+      } else {
+        el.textContent = 'Nenhuma temporada ativa de momento.';
+      }
+    })();
+  </script>
+</body>
+</html>
