@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EuroPool — Leaderboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <a href="index.html" class="topbar-logo">🍀 EuroPool</a>
+    <span class="topbar-season" id="season-badge">A carregar...</span>
+  </div>
+
+  <div class="container" style="padding-top: 20px; padding-bottom: 40px;">
+
+    <!-- Último sorteio -->
+    <div class="last-draw" id="last-draw-section" style="display:none;">
+      <div class="last-draw-label" id="last-draw-label">Último Sorteio</div>
+      <div class="balls-row" id="last-draw-balls"></div>
+    </div>
+
+    <!-- Pesquisa -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="form-input"
+        id="search-input"
+        placeholder="Pesquisar jogador..."
+        autocomplete="off"
+      >
+    </div>
+
+    <!-- Contagem -->
+    <p class="section-heading" id="player-count"></p>
+
+    <!-- Leaderboard -->
+    <div id="leaderboard-list"></div>
+
+    <!-- Estado vazio -->
+    <div id="empty-state" class="hidden">
+      <div class="card" style="text-align:center; padding: 32px;">
+        <p class="text-muted">Nenhum jogador encontrado.</p>
+      </div>
+    </div>
+
+    <!-- Alerta de erro -->
+    <div id="alert-box" class="alert hidden"></div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/guest.js"></script>
+</body>
+</html>
