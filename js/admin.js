@@ -320,7 +320,7 @@ async function editSeasonPlayerKey(spId, currentKey) {
 
   const keyNumbers = newKey.split(',').map(s => parseInt(s.trim(), 10));
   const err = validateKey(keyNumbers);
-  if (err) { alert(err); return; }
+  if (err) { showAlert('alert-season-players', err, 'error'); return; }
 
   const { error } = await db
     .from('season_players')
@@ -472,7 +472,14 @@ async function createNewSeason() {
   if (!name) { alert('Introduz o nome da temporada.'); return; }
 
   // Garantir que não há outra temporada ativa (por precaução)
-  await db.from('seasons').update({ is_active: false }).eq('is_active', true);
+  const { error: deactivateErr } = await db
+    .from('seasons')
+    .update({ is_active: false })
+    .eq('is_active', true);
+  if (deactivateErr) {
+    showAlert('alert-seasons', 'Erro ao desativar temporada anterior.', 'error');
+    return;
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const { data: newSeason, error } = await db
@@ -504,16 +511,26 @@ async function loadAdminLeaderboard() {
     return;
   }
 
-  const { data: seasonPlayers } = await db
+  const { data: seasonPlayers, error: spErr } = await db
     .from('season_players')
     .select('player_id, key_numbers, players(id, name)')
     .eq('season_id', currentSeason.id);
+  if (spErr) {
+    document.getElementById('admin-leaderboard-list').innerHTML =
+      '<p class="text-muted text-sm">Erro ao carregar jogadores.</p>';
+    return;
+  }
 
-  const { data: draws } = await db
+  const { data: draws, error: drawsErr } = await db
     .from('draws')
     .select('draw_date, numbers')
     .eq('season_id', currentSeason.id)
     .order('draw_date', { ascending: false });
+  if (drawsErr) {
+    document.getElementById('admin-leaderboard-list').innerHTML =
+      '<p class="text-muted text-sm">Erro ao carregar sorteios.</p>';
+    return;
+  }
 
   // Último sorteio
   if (draws && draws.length > 0) {
