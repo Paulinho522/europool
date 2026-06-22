@@ -474,6 +474,26 @@ body {
 .gap-12 { gap: 12px; }
 .hidden { display: none !important; }
 
+/* ---- Modal ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 44, 34, 0.88);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-box {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--border);
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 500px) {
   .landing-title { font-size: 1.8rem; }

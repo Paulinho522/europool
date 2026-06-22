@@ -50,6 +50,7 @@ async function showTab(name) {
   if (name === 'players')     await loadPlayersTab();
   if (name === 'seasons')     await loadSeasonsTab();
   if (name === 'leaderboard') await loadAdminLeaderboard();
+  if (name === 'admins')      loadAdminsTab();
 }
 
 // ============================================================
@@ -190,9 +191,12 @@ function renderAllPlayers(players) {
         ${players.map(p => `
           <tr>
             <td>${escapeAdminHtml(p.name)}</td>
-            <td style="text-align:right;">
-              <button class="btn btn-secondary btn-sm" onclick="editPlayerName('${p.id}')">
+            <td style="text-align:right; white-space:nowrap;">
+              <button class="btn btn-secondary btn-sm" style="margin-right:6px;" onclick="editPlayerName('${p.id}')">
                 ✏️ Editar
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deletePlayer('${p.id}')">
+                🗑 Apagar
               </button>
             </td>
           </tr>
@@ -277,6 +281,25 @@ async function editPlayerName(playerId) {
   if (error) {
     showAlert('alert-players', 'Erro ao atualizar nome.', 'error');
   } else {
+    await loadPlayersTab();
+  }
+}
+
+// Apagar jogador global
+async function deletePlayer(playerId) {
+  const player = _allPlayers.find(p => p.id === playerId);
+  const name = player ? player.name : 'este jogador';
+  if (!confirm(`Tens a certeza que queres apagar "${name}"?\nEsta ação é irreversível.`)) return;
+
+  const { error } = await db.from('players').delete().eq('id', playerId);
+  if (error) {
+    if (error.code === '23503') {
+      showAlert('alert-players', `Não é possível apagar "${name}" porque está associado a temporadas. Remove-o primeiro das temporadas.`, 'error');
+    } else {
+      showAlert('alert-players', 'Erro ao apagar jogador.', 'error');
+    }
+  } else {
+    showAlert('alert-players', `Jogador "${name}" apagado.`, 'success');
     await loadPlayersTab();
   }
 }
@@ -580,6 +603,87 @@ async function loadAdminLeaderboard() {
     `;
   }).join('');
 }
+
+// ============================================================
+// TAB: ADMINS
+// ============================================================
+
+function loadAdminsTab() {
+  document.getElementById('alert-admins').classList.add('hidden');
+  document.getElementById('create-admin-form').reset();
+}
+
+document.getElementById('create-admin-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email    = document.getElementById('admin-new-email').value.trim();
+  const password = document.getElementById('admin-new-password').value;
+
+  // Guardar sessão atual para restaurar após signUp
+  const { data: { session: adminSession } } = await db.auth.getSession();
+
+  const { data, error } = await db.auth.signUp({ email, password });
+
+  // Restaurar sessão do poweruser (caso signUp tenha substituído)
+  if (adminSession) {
+    try {
+      await db.auth.setSession({
+        access_token:  adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      });
+    } catch {
+      window.location.href = 'admin-login.html';
+      return;
+    }
+  }
+
+  if (error) {
+    showAlert('alert-admins', `Erro: ${error.message}`, 'error');
+  } else if (data.user && !data.session) {
+    showAlert('alert-admins', `Admin criado! O utilizador precisa de confirmar o email antes de entrar. (Desativa "Confirm email" no Supabase para evitar isto.)`, 'success');
+    e.target.reset();
+  } else {
+    showAlert('alert-admins', `Admin ${email} criado com sucesso!`, 'success');
+    e.target.reset();
+  }
+});
+
+// ============================================================
+// MUDAR PASSWORD
+// ============================================================
+
+function openChangePassword() {
+  document.getElementById('change-password-form').reset();
+  document.getElementById('alert-change-password').classList.add('hidden');
+  document.getElementById('change-password-modal').classList.remove('hidden');
+}
+
+function closeChangePassword() {
+  document.getElementById('change-password-modal').classList.add('hidden');
+}
+
+document.getElementById('change-password-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeChangePassword();
+});
+
+document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const newPwd     = document.getElementById('new-password').value;
+  const confirmPwd = document.getElementById('confirm-password').value;
+
+  if (newPwd !== confirmPwd) {
+    showAlert('alert-change-password', 'As passwords não coincidem.', 'error');
+    return;
+  }
+
+  const { error } = await db.auth.updateUser({ password: newPwd });
+  if (error) {
+    showAlert('alert-change-password', `Erro: ${error.message}`, 'error');
+  } else {
+    showAlert('alert-change-password', 'Password alterada com sucesso!', 'success');
+    e.target.reset();
+    setTimeout(closeChangePassword, 1500);
+  }
+});
 
 // ============================================================
 // ARRANQUE

@@ -12,6 +12,7 @@
     <a href="index.html" class="topbar-logo">🍀 EuroPool</a>
     <div class="topbar-user">
       <span id="admin-email" class="text-muted text-sm"></span>
+      <button onclick="openChangePassword()" class="btn btn-secondary btn-sm">🔑 Password</button>
       <button onclick="logout()" class="btn btn-danger btn-sm">Sair</button>
     </div>
   </div>
@@ -33,6 +34,7 @@
       <button class="tab-btn" data-tab="players" onclick="showTab('players')">👥 Jogadores</button>
       <button class="tab-btn" data-tab="seasons" onclick="showTab('seasons')">🏆 Temporadas</button>
       <button class="tab-btn" data-tab="leaderboard" onclick="showTab('leaderboard')">📊 Leaderboard</button>
+      <button class="tab-btn" data-tab="admins" onclick="showTab('admins')">👤 Admins</button>
     </div>
 
     <!-- Tab: Sorteios -->
@@ -168,6 +170,52 @@
       <div id="admin-leaderboard-list"></div>
     </div>
 
+    <!-- Tab: Admins -->
+    <div id="tab-admins" class="tab-content">
+      <div class="card">
+        <p class="card-title">➕ Criar Novo Admin</p>
+        <p class="text-muted text-sm mb-16">O novo admin poderá entrar imediatamente e alterar a sua password após o primeiro login.</p>
+        <div id="alert-admins" class="alert hidden"></div>
+        <form id="create-admin-form">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="admin-new-email" class="form-input" placeholder="email@exemplo.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="admin-new-password" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary">Criar Admin</button>
+        </form>
+      </div>
+      <div class="card">
+        <p class="card-title" style="color: var(--admin);">⚠️ Atenção</p>
+        <p class="text-muted text-sm">Para que os novos admins entrem sem confirmar email, vai a <strong>Supabase Dashboard → Authentication → Providers → Email</strong> e desativa <strong>"Confirm email"</strong>.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal: Mudar Password -->
+  <div id="change-password-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <p class="card-title">🔑 Mudar Password</p>
+      <div id="alert-change-password" class="alert hidden"></div>
+      <form id="change-password-form">
+        <div class="form-group">
+          <label class="form-label">Nova Password</label>
+          <input type="password" id="new-password" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar Password</label>
+          <input type="password" id="confirm-password" class="form-input" placeholder="Repetir password" required minlength="6">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeChangePassword()">Cancelar</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
