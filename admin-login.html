@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EuroPool — Admin Login</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <meta name="theme-color" content="#064e3b">
 </head>
 <body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
   <div style="width: 100%; max-width: 360px; padding: 24px 16px;">
@@ -84,5 +87,6 @@
       }
     });
   </script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

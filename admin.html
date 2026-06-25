@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EuroPool — Admin</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <meta name="theme-color" content="#064e3b">
 </head>
 <body>
   <!-- Topbar -->
@@ -222,5 +225,6 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/admin.js"></script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>
