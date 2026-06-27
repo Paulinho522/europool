@@ -1,4 +1,4 @@
-const CACHE = 'europool-v1';
+const CACHE = 'europool-v2';
 const SHELL = [
   '/',
   '/index.html',
@@ -8,7 +8,8 @@ const SHELL = [
   '/admin.html',
   '/css/style.css',
   '/manifest.json',
-  '/icons/icon.svg'
+  '/icons/icon.svg',
+  '/js/pwa-install.js'
 ];
 
 self.addEventListener('install', e => {
