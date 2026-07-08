@@ -243,6 +243,41 @@ function renderSeasonPlayers(sps) {
   `;
 }
 
+// Pré-preencher chave ao selecionar jogador no formulário de associação
+document.getElementById('sp-player-select').addEventListener('change', async (e) => {
+  const playerId = e.target.value;
+  const hintEl   = document.getElementById('sp-key-hint');
+  const keyInput = document.getElementById('sp-key-input');
+
+  if (!playerId || !currentSeason) {
+    keyInput.value = '';
+    hintEl.classList.add('hidden');
+    return;
+  }
+
+  const { data: prevEntries } = await db
+    .from('season_players')
+    .select('key_numbers, seasons(name, start_date)')
+    .eq('player_id', playerId)
+    .neq('season_id', currentSeason.id);
+
+  if (!prevEntries || prevEntries.length === 0) {
+    keyInput.value = '';
+    hintEl.classList.add('hidden');
+    return;
+  }
+
+  // Temporada mais recente primeiro
+  prevEntries.sort((a, b) =>
+    (b.seasons?.start_date || '').localeCompare(a.seasons?.start_date || '')
+  );
+
+  const latest = prevEntries[0];
+  keyInput.value = [...latest.key_numbers].sort((a, b) => a - b).join(', ');
+  hintEl.textContent = `Chave pré-preenchida da temporada "${latest.seasons?.name || '—'}" — podes alterar antes de guardar.`;
+  hintEl.classList.remove('hidden');
+});
+
 function escapeAdminHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -337,6 +372,7 @@ document.getElementById('add-season-player-form').addEventListener('submit', asy
   } else {
     showAlert('alert-season-players', 'Jogador associado com sucesso!', 'success');
     e.target.reset();
+    document.getElementById('sp-key-hint').classList.add('hidden');
     await loadPlayersTab();
   }
 });
