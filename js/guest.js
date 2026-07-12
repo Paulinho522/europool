@@ -10,9 +10,10 @@ async function loadLeaderboard() {
   const season = await getActiveSeason();
   if (!season) {
     document.getElementById('season-badge').textContent = 'Sem temporada ativa';
-    showAlert('alert-box', 'Não existe nenhuma temporada ativa de momento.', 'info');
+    await showWinnerBanner();
     return;
   }
+  document.getElementById('winner-banner').classList.add('hidden');
 
   document.getElementById('season-badge').textContent = `${season.name} · Ativa`;
 
@@ -154,6 +155,39 @@ document.getElementById('search-input').addEventListener('input', e => {
     : allRows;
   renderLeaderboard(filtered);
 });
+
+async function showWinnerBanner() {
+  const { data: lastSeason } = await db
+    .from('seasons')
+    .select('id, name, end_date')
+    .eq('is_active', false)
+    .order('end_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!lastSeason) {
+    showAlert('alert-box', 'Não existe nenhuma temporada ativa de momento.', 'info');
+    return;
+  }
+
+  const { data: winners } = await db
+    .from('season_winners')
+    .select('players(name)')
+    .eq('season_id', lastSeason.id);
+
+  const names = (winners || []).map(w => w.players.name);
+  const winnerText = names.length > 0
+    ? `Vencedor${names.length > 1 ? 'es' : ''}: <strong>${names.map(escapeHtml).join('</strong>, <strong>')}</strong> 🎉`
+    : 'Terminou sem vencedor registado.';
+
+  const banner = document.getElementById('winner-banner');
+  banner.innerHTML = `
+    <p class="card-title" style="color: var(--admin);">🏆 A Temporada "${escapeHtml(lastSeason.name)}" terminou!</p>
+    <p class="text-secondary mb-16">${winnerText}</p>
+    <a href="seasons.html?season_id=${lastSeason.id}" class="btn btn-admin btn-sm">Ver histórico desta temporada →</a>
+  `;
+  banner.classList.remove('hidden');
+}
 
 // Arranque
 loadLeaderboard();

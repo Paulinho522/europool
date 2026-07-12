@@ -430,6 +430,12 @@ body {
   margin-bottom: 8px;
 }
 
+/* ---- Winner Banner ---- */
+.winner-banner {
+  border: 1px solid var(--admin);
+  background: rgba(251, 191, 36, 0.08);
+}
+
 /* ---- Section Heading ---- */
 .section-heading {
   color: var(--text-muted);
