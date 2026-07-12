@@ -106,6 +106,48 @@ async function loadDrawsTab() {
   `;
 }
 
+async function checkForWinners(seasonId) {
+  const { data: sps } = await db
+    .from('season_players')
+    .select('player_id, key_numbers, players(name)')
+    .eq('season_id', seasonId);
+
+  const { data: draws } = await db
+    .from('draws')
+    .select('draw_date, numbers')
+    .eq('season_id', seasonId);
+
+  const winners = (sps || []).filter(sp => sp.players != null).filter(sp => {
+    const { matched } = calcProgress(sp.key_numbers, draws || []);
+    return matched.length === 15;
+  });
+
+  if (winners.length === 0) return null;
+
+  const { error: insertErr } = await db
+    .from('season_winners')
+    .upsert(
+      winners.map(w => ({ season_id: seasonId, player_id: w.player_id })),
+      { onConflict: 'season_id,player_id', ignoreDuplicates: true }
+    );
+  if (insertErr) {
+    console.error('checkForWinners insert:', insertErr);
+    return null;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const { error: closeErr } = await db
+    .from('seasons')
+    .update({ is_active: false, end_date: today })
+    .eq('id', seasonId);
+  if (closeErr) {
+    console.error('checkForWinners close:', closeErr);
+    return null;
+  }
+
+  return winners.map(w => w.players.name);
+}
+
 document.getElementById('draw-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!currentSeason) {
@@ -129,9 +171,19 @@ document.getElementById('draw-form').addEventListener('submit', async (e) => {
   if (error) {
     showAlert('alert-draws', 'Erro ao guardar sorteio.', 'error');
   } else {
-    showAlert('alert-draws', 'Sorteio registado com sucesso!', 'success');
     e.target.reset();
     await loadDrawsTab();
+    const winnerNames = await checkForWinners(currentSeason.id);
+    if (winnerNames) {
+      showAlert('alert-draws', `🏆 Vencedor(es): ${winnerNames.join(', ')} — temporada encerrada automaticamente.`, 'success');
+      currentSeason = null;
+      document.getElementById('active-season-label').textContent =
+        'Temporada encerrada automaticamente. Cria uma nova temporada.';
+      document.getElementById('draws-list').innerHTML =
+        '<p class="text-muted text-sm">Sem temporada ativa.</p>';
+    } else {
+      showAlert('alert-draws', 'Sorteio registado com sucesso!', 'success');
+    }
   }
 });
 
