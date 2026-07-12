@@ -3,6 +3,7 @@
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 let allRows = []; // cache para filtro de pesquisa
+let allDraws = []; // cache de todos os sorteios da época ativa
 
 async function loadLeaderboard() {
   // 1. Temporada ativa
@@ -50,6 +51,10 @@ async function loadLeaderboard() {
       .join('');
     section.style.display = 'block';
   }
+
+  allDraws = draws || [];
+  document.getElementById('draw-history-list').classList.add('hidden');
+  document.getElementById('toggle-draws-btn').textContent = 'Ver histórico completo ▾';
 
   // 5. Calcular progresso de cada jogador
   allRows = (seasonPlayers || [])
@@ -112,6 +117,33 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function renderDrawHistory(draws) {
+  return [...draws]
+    .sort((a, b) => new Date(b.draw_date) - new Date(a.draw_date))
+    .map(d => `
+      <div class="mb-16">
+        <p class="text-muted text-sm mb-8">${formatDate(d.draw_date)}</p>
+        <div class="balls-row">
+          ${d.numbers.map(n => `<span class="ball ball-draw">${n}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+}
+
+function toggleDrawHistory() {
+  const list = document.getElementById('draw-history-list');
+  const btn = document.getElementById('toggle-draws-btn');
+  const isHidden = list.classList.contains('hidden');
+  if (isHidden) {
+    list.innerHTML = renderDrawHistory(allDraws);
+    list.classList.remove('hidden');
+    btn.textContent = 'Ocultar histórico ▴';
+  } else {
+    list.classList.add('hidden');
+    btn.textContent = 'Ver histórico completo ▾';
+  }
 }
 
 // Pesquisa em tempo real
