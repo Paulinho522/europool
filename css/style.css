@@ -464,6 +464,7 @@ body {
 
 /* ---- Utility ---- */
 .text-muted  { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
 .text-accent { color: var(--accent); }
 .text-admin  { color: var(--admin); }
 .text-danger { color: var(--danger); }

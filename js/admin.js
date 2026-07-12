@@ -107,15 +107,23 @@ async function loadDrawsTab() {
 }
 
 async function checkForWinners(seasonId) {
-  const { data: sps } = await db
+  const { data: sps, error: spsErr } = await db
     .from('season_players')
     .select('player_id, key_numbers, players(name)')
     .eq('season_id', seasonId);
+  if (spsErr) {
+    console.error('checkForWinners season_players:', spsErr);
+    return null;
+  }
 
-  const { data: draws } = await db
+  const { data: draws, error: drawsErr } = await db
     .from('draws')
     .select('draw_date, numbers')
     .eq('season_id', seasonId);
+  if (drawsErr) {
+    console.error('checkForWinners draws:', drawsErr);
+    return null;
+  }
 
   const winners = (sps || []).filter(sp => sp.players != null).filter(sp => {
     const { matched } = calcProgress(sp.key_numbers, draws || []);
