@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EuroPool — Temporadas Anteriores</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <meta name="theme-color" content="#064e3b">
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html" class="topbar-logo">🍀 EuroPool</a>
+    <span class="topbar-season" id="season-badge">Temporadas Anteriores</span>
+  </div>
+
+  <div class="container" style="padding-top: 20px; padding-bottom: 40px;">
+
+    <a href="guest.html" class="back-link">← Voltar ao leaderboard</a>
+
+    <div id="alert-box" class="alert hidden"></div>
+
+    <!-- Vista de lista -->
+    <div id="seasons-list-view">
+      <p class="section-heading">Temporadas Terminadas</p>
+      <div id="seasons-list"></div>
+    </div>
+
+    <!-- Vista de detalhe -->
+    <div id="season-detail-view" class="hidden">
+      <a href="seasons.html" class="back-link">← Voltar às temporadas</a>
+
+      <div class="card winner-banner" id="detail-winner-banner"></div>
+
+      <div class="card">
+        <p class="card-title">🎱 Sorteios desta Temporada</p>
+        <div id="detail-draws-list"></div>
+      </div>
+
+      <p class="section-heading" id="detail-player-count"></p>
+      <div id="detail-leaderboard-list"></div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/seasons.js"></script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <script src="js/pwa-install.js"></script>
+</body>
+</html>
