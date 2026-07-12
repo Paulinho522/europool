@@ -494,6 +494,23 @@ body {
   border: 1px solid var(--border);
 }
 
+/* ---- Checkbox List (multi-select vencedores) ---- */
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 14px;
+}
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 500px) {
   .landing-title { font-size: 1.8rem; }

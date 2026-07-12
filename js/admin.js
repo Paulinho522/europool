@@ -489,18 +489,14 @@ async function loadSeasonsTab() {
       </table>
     `;
 
-    // Preencher select do vencedor
+    // Preencher checkboxes de vencedores
     const { data: sps } = await db
       .from('season_players')
       .select('player_id, players(id, name)')
       .eq('season_id', currentSeason.id)
       .order('players(name)');
 
-    const winnerSelect = document.getElementById('winner-select');
-    winnerSelect.innerHTML = '<option value="">Selecionar jogador...</option>' +
-      (sps || []).map(sp =>
-        `<option value="${sp.player_id}">${escapeAdminHtml(sp.players.name)}</option>`
-      ).join('');
+    renderWinnerCheckboxes(sps || []);
   } else {
     info.innerHTML = '<p class="text-muted text-sm">Nenhuma temporada ativa.</p>';
   }
@@ -543,6 +539,20 @@ async function loadSeasonsTab() {
   }
 }
 
+function renderWinnerCheckboxes(sps) {
+  const container = document.getElementById('winner-checkboxes');
+  if (sps.length === 0) {
+    container.innerHTML = '<p class="text-muted text-sm">Sem jogadores nesta temporada.</p>';
+    return;
+  }
+  container.innerHTML = sps.map(sp => `
+    <label class="checkbox-row">
+      <input type="checkbox" value="${sp.player_id}">
+      ${escapeAdminHtml(sp.players.name)}
+    </label>
+  `).join('');
+}
+
 function openDeclareWinner() {
   document.getElementById('declare-winner-form-card').classList.remove('hidden');
 }
@@ -557,23 +567,28 @@ function closeNewSeason() {
 }
 
 async function declareWinner() {
-  const winnerId = document.getElementById('winner-select').value;
-  if (!winnerId) { alert('Seleciona um jogador.'); return; }
+  const checked = [...document.querySelectorAll('#winner-checkboxes input:checked')].map(el => el.value);
+  if (checked.length === 0) { alert('Seleciona pelo menos um jogador.'); return; }
   if (!currentSeason) { alert('Sem temporada ativa.'); return; }
-  if (!confirm('Confirmas a declaração deste vencedor? A temporada será encerrada.')) return;
+  if (!confirm(`Confirmas a declaração de ${checked.length} vencedor(es)? A temporada será encerrada.`)) return;
+
+  const { error: winError } = await db
+    .from('season_winners')
+    .insert(checked.map(playerId => ({ season_id: currentSeason.id, player_id: playerId })));
+
+  if (winError) {
+    showAlert('alert-seasons', 'Erro ao declarar vencedor(es).', 'error');
+    return;
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const { error } = await db
     .from('seasons')
-    .update({
-      winner_player_id: winnerId,
-      is_active: false,
-      end_date: today,
-    })
+    .update({ is_active: false, end_date: today })
     .eq('id', currentSeason.id);
 
   if (error) {
-    showAlert('alert-seasons', 'Erro ao declarar vencedor.', 'error');
+    showAlert('alert-seasons', 'Erro ao encerrar temporada.', 'error');
   } else {
     currentSeason = null;
     document.getElementById('active-season-label').textContent =

@@ -131,15 +131,15 @@
 
       <!-- Declarar vencedor (oculto por defeito) -->
       <div class="card hidden" id="declare-winner-form-card">
-        <p class="card-title">🏆 Declarar Vencedor</p>
+        <p class="card-title">🏆 Declarar Vencedor(es)</p>
         <div class="form-group">
-          <label class="form-label">Jogador Vencedor</label>
-          <select id="winner-select" class="form-input">
-            <option value="">Selecionar jogador...</option>
-          </select>
+          <label class="form-label">Jogadores Vencedores (podes selecionar mais do que um)</label>
+          <div id="winner-checkboxes" class="checkbox-list">
+            <p class="text-muted text-sm">Sem jogadores nesta temporada.</p>
+          </div>
         </div>
         <div style="display:flex; gap:10px;">
-          <button class="btn btn-admin" onclick="declareWinner()">Confirmar Vencedor</button>
+          <button class="btn btn-admin" onclick="declareWinner()">Confirmar Vencedor(es)</button>
           <button class="btn btn-secondary" onclick="closeDeclareWinner()">Cancelar</button>
         </div>
       </div>
