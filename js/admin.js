@@ -501,10 +501,10 @@ async function loadSeasonsTab() {
     info.innerHTML = '<p class="text-muted text-sm">Nenhuma temporada ativa.</p>';
   }
 
-  // Histórico — usar alias explícito para FK winner_player_id
+  // Histórico
   const { data: allSeasons } = await db
     .from('seasons')
-    .select('id, name, start_date, end_date, winner:players!winner_player_id(name)')
+    .select('id, name, start_date, end_date')
     .eq('is_active', false)
     .order('created_at', { ascending: false });
 
@@ -512,27 +512,41 @@ async function loadSeasonsTab() {
   if (!allSeasons || allSeasons.length === 0) {
     history.innerHTML = '<p class="text-muted text-sm">Sem temporadas anteriores.</p>';
   } else {
+    const { data: winners } = await db
+      .from('season_winners')
+      .select('season_id, players(name)')
+      .in('season_id', allSeasons.map(s => s.id));
+
+    const winnersBySeason = {};
+    (winners || []).forEach(w => {
+      if (!winnersBySeason[w.season_id]) winnersBySeason[w.season_id] = [];
+      winnersBySeason[w.season_id].push(w.players.name);
+    });
+
     history.innerHTML = `
       <table class="table">
         <thead>
           <tr>
             <th>Temporada</th>
             <th>Período</th>
-            <th>Vencedor</th>
+            <th>Vencedor(es)</th>
           </tr>
         </thead>
         <tbody>
-          ${allSeasons.map(s => `
-            <tr>
-              <td>${escapeAdminHtml(s.name)}</td>
-              <td class="text-sm text-muted">
-                ${formatDate(s.start_date)} → ${formatDate(s.end_date)}
-              </td>
-              <td>
-                ${s.winner ? `🏆 ${escapeAdminHtml(s.winner.name)}` : '<span class="text-muted">—</span>'}
-              </td>
-            </tr>
-          `).join('')}
+          ${allSeasons.map(s => {
+            const names = winnersBySeason[s.id] || [];
+            return `
+              <tr>
+                <td>${escapeAdminHtml(s.name)}</td>
+                <td class="text-sm text-muted">
+                  ${formatDate(s.start_date)} → ${formatDate(s.end_date)}
+                </td>
+                <td>
+                  ${names.length > 0 ? `🏆 ${names.map(escapeAdminHtml).join(', ')}` : '<span class="text-muted">—</span>'}
+                </td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>
     `;
